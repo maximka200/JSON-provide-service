@@ -16,11 +16,11 @@ type Config struct {
 
 type Db struct {
 	Username string `mapstructure:"username"`
-	Password string
+	Password string `mapstructure:"username"`
 	Host     string `mapstructure:"host"`
 	Port     int    `mapstructure:"port"`
 	DBName   string `mapstructure:"db_name"`
-	Sslmode  bool   `mapstructure:"sslmode"`
+	SSLmode  bool   `mapstructure:"sslmode"`
 }
 
 func MustReadConfig() Config {

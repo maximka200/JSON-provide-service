@@ -3,7 +3,8 @@ port: 1231
 timeout: 10h
 db:
   username: "name"
-  host: "password"
+  password: "password"
+  host: "localhost"
   port: 2020
   dbname: "JPSdb"
   sslmode: false

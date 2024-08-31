@@ -12,7 +12,6 @@ func main() {
 	log := setupLogger(cfg.Env)
 
 	log.Info("App started", slog.Any("config", cfg))
-
 }
 
 func setupLogger(env string) *slog.Logger {
