@@ -16,6 +16,7 @@ func NewPostgreDB(db *sqlx.DB) *PostgreDB {
 }
 
 func NewSqlxDB(cfg config.Config) (*sqlx.DB, error) {
+	op := "storage.NewSqlxDB"
 	db, err := sqlx.Open("postgres",
 		fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=%t",
 			cfg.Host, cfg.Port, cfg.Username, cfg.DBName, cfg.Password, cfg.SSLmode))
@@ -24,9 +25,9 @@ func NewSqlxDB(cfg config.Config) (*sqlx.DB, error) {
 	}
 	err = db.Ping()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w:%s", err, op)
 	}
-	return db, err
+	return db, nil
 }
 
 func (psql *PostgreDB) NewJSON(json string) (id int, err error) {
