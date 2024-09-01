@@ -2,6 +2,8 @@ package main
 
 import (
 	"jps/internal/config"
+	"jps/internal/handler"
+	storage "jps/internal/storage/postgresql"
 	"log/slog"
 	"os"
 )
@@ -12,6 +14,19 @@ func main() {
 	log := setupLogger(cfg.Env)
 
 	log.Info("App started", slog.Any("config", cfg))
+
+	db, err := storage.NewSqlxDB(cfg)
+	if err != nil {
+		log.Error("db doesn't init")
+		panic("db doesn't init")
+	}
+
+	log.Info("App started", slog.Any("config", cfg))
+
+	storage := storage.NewPostgreDB(db)
+
+	handlers := handler.NewHandler(storage)
+
 }
 
 func setupLogger(env string) *slog.Logger {

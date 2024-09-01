@@ -7,10 +7,10 @@ import (
 )
 
 type Handler struct {
-	Storage *storage.Storage
+	Storage storage.Storage
 }
 
-func NewHandler(strg *storage.Storage) Handler {
+func NewHandler(strg storage.Storage) Handler {
 	return Handler{Storage: strg}
 }
 
@@ -23,4 +23,4 @@ func (h *Handler) InitRouter() *gin.Engine {
 		service.DELETE("/deleteJSON", h.DeleteJSON)
 	}
 	return engine
-}11
+}
