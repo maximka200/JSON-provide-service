@@ -1,15 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"jps/internal/config"
 )
 
 func main() {
-	s1 := `{"ggg": 1}`
-	s2 := `{sdsds:dadaa, 2}`
-
-	fmt.Println(json.Valid([]byte(s1)))
-	fmt.Print(json.Valid([]byte(s2)))
-
+	cfg := config.MustReadConfig()
+	fmt.Print(cfg)
 }

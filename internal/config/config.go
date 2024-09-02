@@ -16,11 +16,11 @@ type Config struct {
 
 type Db struct {
 	Username string `mapstructure:"username"`
-	Password string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
 	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	DBName   string `mapstructure:"db_name"`
-	SSLmode  bool   `mapstructure:"sslmode"`
+	PortDB   int    `mapstructure:"portdb"`
+	DBName   string `mapstructure:"dbname"`
+	SSLmode  string `mapstructure:"sslmode"`
 }
 
 func MustReadConfig() Config {
@@ -28,7 +28,7 @@ func MustReadConfig() Config {
 
 	viper.SetConfigName("local")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("../config/")
+	viper.AddConfigPath("./config/")
 
 	if err := viper.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("error reading config file: %w", err))

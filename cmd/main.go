@@ -12,6 +12,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -23,7 +25,7 @@ func main() {
 
 	db, err := storage.NewSqlxDB(cfg)
 	if err != nil {
-		log.Error("db doesn't init")
+		log.Error(fmt.Sprintf("db doesn't init: %s", err))
 		panic("db doesn't init")
 	}
 
