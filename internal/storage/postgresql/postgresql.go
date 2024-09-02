@@ -18,8 +18,8 @@ func NewPostgreDB(db *sqlx.DB) *PostgreDB {
 func NewSqlxDB(cfg config.Config) (*sqlx.DB, error) {
 	op := "storage.NewSqlxDB"
 	db, err := sqlx.Open("postgres",
-		fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=%s",
-			cfg.Host, cfg.PortDB, cfg.Username, cfg.DBName, cfg.SSLmode))
+		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+			cfg.Host, cfg.PortDB, cfg.Username, cfg.Password, cfg.DBName, cfg.SSLmode))
 	if err != nil {
 		return nil, fmt.Errorf("%w:%s", err, op)
 	}
