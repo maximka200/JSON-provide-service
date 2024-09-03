@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
 	"jps/internal/config"
 
@@ -32,13 +33,13 @@ func NewSqlxDB(cfg config.Config) (*sqlx.DB, error) {
 }
 
 func (psql *PostgreDB) NewJSON(json string) (id int, err error) {
-	panic("dont impl")
+	return 0, errors.New("dont implement")
 }
 
 func (psql *PostgreDB) GetJSON(id int) (json string, err error) {
-	panic("dont impl")
+	return "asdas", errors.New("dont implement")
 }
 
 func (psql *PostgreDB) DeleteJSON(id int) (err error) {
-	panic("dont impl")
+	return errors.New("dont implement")
 }
