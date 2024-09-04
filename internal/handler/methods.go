@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,7 +17,7 @@ type Id struct {
 func (h *Handler) NewJSON(c *gin.Context) {
 	json, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, "cannot read message body")
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("cannot read message body: %s", err))
 		return
 	}
 	defer c.Request.Body.Close()
@@ -25,7 +26,7 @@ func (h *Handler) NewJSON(c *gin.Context) {
 
 	id, err := h.Storage.NewJSON(jsonStr)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, "cannot get json id")
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("cannot get json id: %s", err))
 		return
 	}
 
