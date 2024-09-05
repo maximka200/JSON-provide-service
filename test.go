@@ -1,11 +1,18 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"jps/internal/config"
+)
+
+var (
+	errInternal  = errors.New("internal err")
+	errInternalT = errors.New("internal err")
 )
 
 func main() {
-	cfg := config.MustReadConfig()
-	fmt.Print(cfg)
+	errorOne := errInternal
+	err := errInternalT
+	fmt.Println(errorOne == err)
+	fmt.Println(errors.Is(errorOne, err))
 }

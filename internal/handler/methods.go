@@ -1,15 +1,17 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	storageErr "jps/internal/storage/postgresql"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Id struct {
-	id int
+	Id int `json:"id"`
 }
 
 // слой десериализации данных из http req
@@ -26,6 +28,10 @@ func (h *Handler) NewJSON(c *gin.Context) {
 
 	id, err := h.Storage.NewJSON(jsonStr)
 	if err != nil {
+		if errors.Is(err, storageErr.ErrInvalidCredentials) {
+			c.JSON(http.StatusBadRequest, "invalid credentials")
+			return
+		}
 		c.JSON(http.StatusInternalServerError, fmt.Sprintf("cannot get json id: %s", err))
 		return
 	}
@@ -41,13 +47,16 @@ func (h *Handler) DeleteJSON(c *gin.Context) {
 		return
 	}
 
-	if err := h.Storage.DeleteJSON(id.id); err != nil {
-		// todo: errors validation
+	if err := h.Storage.DeleteJSON(id.Id); err != nil {
+		if errors.Is(err, storageErr.ErrInvalidCredentials) {
+			c.JSON(http.StatusBadRequest, "invalid credentials")
+			return
+		}
 		c.JSON(http.StatusInternalServerError, fmt.Sprintf("internal error: %s", err))
 		return
 	}
 
-	c.JSON(http.StatusOK, fmt.Sprintf("successful deleting json obj with id: %d", id.id))
+	c.JSON(http.StatusOK, fmt.Sprintf("successful deleting json obj with id: %d", id.Id))
 }
 
 func (h *Handler) GetJSON(c *gin.Context) {
@@ -58,9 +67,12 @@ func (h *Handler) GetJSON(c *gin.Context) {
 		return
 	}
 
-	json, err := h.Storage.GetJSON(id.id)
+	json, err := h.Storage.GetJSON(id.Id)
 	if err != nil {
-		// todo: errors validation
+		if errors.Is(err, storageErr.ErrInvalidCredentials) {
+			c.JSON(http.StatusBadRequest, "invalid credentials")
+			return
+		}
 		c.JSON(http.StatusInternalServerError, fmt.Sprintf("internal error: %s", err))
 		return
 	}

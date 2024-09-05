@@ -1,10 +1,12 @@
 package storage
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"jps/internal/config"
-	"database/sql"
+	"log/slog"
+
 	"github.com/jmoiron/sqlx"
 )
 
@@ -13,9 +15,10 @@ var (
 )
 
 var (
-	ErrInternal = errors.New("Internal error")
-	ErrInvalidCredentials = errors.New("Invalid credentials")
+	ErrInternal           = errors.New("internal error")
+	ErrInvalidCredentials = errors.New("invalid credentials")
 )
+
 type PostgreDB struct {
 	db *sqlx.DB
 }
@@ -43,7 +46,8 @@ func NewSqlxDB(cfg config.Config) (*sqlx.DB, error) {
 func (psql *PostgreDB) NewJSON(json string) (id int, err error) {
 	var idRes int
 
-	stmt, err := psql.db.Prepare(fmt.Sprintf("INSERT INTO %s (data) values ($2::json) RETURNING id", jsonsTable))
+	stmt, err := psql.db.Prepare(fmt.Sprintf("INSERT INTO %s (json) values ($1::json) RETURNING id", jsonsTable))
+	slog.Info(json)
 	if err != nil {
 		return 0, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
@@ -52,7 +56,7 @@ func (psql *PostgreDB) NewJSON(json string) (id int, err error) {
 
 	if err := result.Scan(&idRes); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0, fmt.Errorf("%w: %w", ErrInvalidCredentials, err)
+			return 0, ErrInvalidCredentials
 		}
 		return 0, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
@@ -63,22 +67,21 @@ func (psql *PostgreDB) NewJSON(json string) (id int, err error) {
 func (psql *PostgreDB) GetJSON(id int) (json string, err error) {
 	var jsonRes string
 
-	stmt, err := psql.db.Prepare(fmt.Sprintf("SELECT json FROM TABLE %s WHERE id=$2", jsonsTable))
+	stmt, err := psql.db.Prepare(fmt.Sprintf("SELECT json FROM %s WHERE id=$1", jsonsTable))
 	if err != nil {
 		return "", fmt.Errorf("%w: %w", ErrInternal, err)
 	}
 
-	result := stmt.QueryRow(jsonsTable, id)
+	result := stmt.QueryRow(id)
 
 	if err := result.Scan(&jsonRes); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", fmt.Errorf("%w: %w", ErrInvalidCredentials, err)
+			return "", ErrInvalidCredentials
 		}
 		return "", fmt.Errorf("%w: %w", ErrInternal, err)
 	}
 
 	return jsonRes, nil
-
 }
 
 func (psql *PostgreDB) DeleteJSON(id int) (err error) {
@@ -87,12 +90,16 @@ func (psql *PostgreDB) DeleteJSON(id int) (err error) {
 		return fmt.Errorf("%w: %w", ErrInternal, err)
 	}
 
-	_, err = stmt.Exec(id)
+	res, err := stmt.Exec(id)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("%w: %w", ErrInvalidCredentials, err)
-		}
 		return fmt.Errorf("%w: %w", ErrInternal, err)
+	}
+
+	count, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrInternal, err)
+	} else if count == 0 {
+		return ErrInvalidCredentials
 	}
 
 	return nil
