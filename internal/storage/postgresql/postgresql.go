@@ -1,10 +1,22 @@
 package storage
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"jps/internal/config"
+	"log/slog"
 
 	"github.com/jmoiron/sqlx"
+)
+
+var (
+	jsonsTable = "jsons"
+)
+
+var (
+	ErrInternal           = errors.New("internal error")
+	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
 type PostgreDB struct {
@@ -32,13 +44,63 @@ func NewSqlxDB(cfg config.Config) (*sqlx.DB, error) {
 }
 
 func (psql *PostgreDB) NewJSON(json string) (id int, err error) {
-	panic("dont impl")
+	var idRes int
+
+	stmt, err := psql.db.Prepare(fmt.Sprintf("INSERT INTO %s (json) values ($1::json) RETURNING id", jsonsTable))
+	slog.Info(json)
+	if err != nil {
+		return 0, fmt.Errorf("%w: %w", ErrInternal, err)
+	}
+
+	result := stmt.QueryRow(json)
+
+	if err := result.Scan(&idRes); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, ErrInvalidCredentials
+		}
+		return 0, fmt.Errorf("%w: %w", ErrInternal, err)
+	}
+
+	return idRes, nil
 }
 
 func (psql *PostgreDB) GetJSON(id int) (json string, err error) {
-	panic("dont impl")
+	var jsonRes string
+
+	stmt, err := psql.db.Prepare(fmt.Sprintf("SELECT json FROM %s WHERE id=$1", jsonsTable))
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrInternal, err)
+	}
+
+	result := stmt.QueryRow(id)
+
+	if err := result.Scan(&jsonRes); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", ErrInvalidCredentials
+		}
+		return "", fmt.Errorf("%w: %w", ErrInternal, err)
+	}
+
+	return jsonRes, nil
 }
 
 func (psql *PostgreDB) DeleteJSON(id int) (err error) {
-	panic("dont impl")
+	stmt, err := psql.db.Prepare(fmt.Sprintf("DELETE FROM %s WHERE id=$1", jsonsTable))
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrInternal, err)
+	}
+
+	res, err := stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrInternal, err)
+	}
+
+	count, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrInternal, err)
+	} else if count == 0 {
+		return ErrInvalidCredentials
+	}
+
+	return nil
 }
